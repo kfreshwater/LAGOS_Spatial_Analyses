@@ -1,7 +1,7 @@
 ---
 title: "Lake Water Quality Analysis"
-author: "Matthew Ross"
-date: "9/17/2019"
+author: "Keian Freshwater"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
 ---
 
@@ -120,27 +120,28 @@ mapview(mean_spatial,zcol='log10_mean_chl')
 
 # Class work
 
-## 1) What is the correlation between Secchi Disk Depth and Chlorophyll a for
-sites with at least 200 observations?
+## 1) What is the correlation between Secchi Disk Depth and Chlorophyll a for sites with at least 200 observations?
 
 - Here, I just want a plot of chla vs secchi for all sites 
 
-```{r}
+```{r,message=false,warning=false}
 #Your code here
-
+ggplot(data=chla_secchi_200,aes(x=chla,y=secchi)) +
+  geom_point() +
+  xlab('Mean Chlorophyll A Concentration') +
+  ylab('Secchi Disk Depth')
 ```
 
+Chlorophyll is used by plants and algae in the process of photosynthesis. When there is no light (i.e. clouded water characterized by a high Secchi Disk depth), organisms with Cholorophyll A cannot maintain life, This is why the highest mean Chlorophyll A concentrations are found solely at a Secchi disk depth of 0.
 
 ## Why might this be the case? 
 
 
 ## 2) What states have the most data? 
 
-### 2a) First you will need to make a lagos spatial dataset that has the total 
-number of counts per site.
+### 2a) First you will need to make a lagos spatial dataset that has the total number of counts per site.
 
 ```{r}
-
 ## Your code here
 ```
 

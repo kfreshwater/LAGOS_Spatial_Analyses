@@ -1,7 +1,7 @@
 ---
 title: "LAGOS Spatial Analysis"
-author: "Matthew Ross"
-date: "9/11/2019"
+author: "Keian Freshwater"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
 editor_options: 
   chunk_output_type: console
@@ -9,14 +9,13 @@ editor_options:
 
 
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=F}
 library(tidyverse) # Tidy packages
 library(sf) #Spatial package that can read and create shapefiles 
 library(mapview) #Interactive maps
 library(LAGOSNE) #Lots and lots of clean lake data
 library(USAboundaries) #USA states and counties
 ```
-
 
 # LAGOS Analysis
 
@@ -26,7 +25,7 @@ library(USAboundaries) #USA states and counties
 
 ### First download and then specifically grab the locus (or site lat longs)
 
-```{r data-read}
+```{r data-read,warning=F}
 # #Lagos download script
 LAGOSNE::lagosne_get(dest_folder = LAGOSNE:::lagos_path())
 
@@ -44,7 +43,7 @@ lake_centers <- lagos$locus
 
 
 ### Convert to spatial data
-```{r}
+```{r,warning=F}
 #Look at the column names
 #names(lake_centers)
 
@@ -56,7 +55,7 @@ lake_centers <- lagos$locus
 
 spatial_lakes <- st_as_sf(lake_centers,coords=c('nhd_long','nhd_lat'),
                           crs=4326) %>%
-  st_transform(2163)
+                          st_transform(2163)
 
 #Subset for plotting
 subset_spatial <- spatial_lakes %>%
@@ -72,7 +71,7 @@ mapview(subset_spatial)
 
 ### Subset to only Minnesota
 
-```{r}
+```{r,warning=F}
 states <- us_states()
 
 #Plot all the states to check if they loaded
@@ -98,7 +97,23 @@ minnesota_lakes %>%
 
 ## 1) Show a map outline of Iowa and Illinois (similar to Minnesota map upstream)
 
-```{r}
+```{r,warning=F, message=F}
+
+
+#Subset to Iowa
+Iowa <- states %>%
+  filter(name == 'Iowa') %>%
+  st_transform(2163)
+
+#Subset to Illinois
+Illinois <- states %>%
+  filter(name == 'Illinois') %>%
+  st_transform(2163)
+
+#Combine both dataframes
+Iowa_and_Illinois <- combine(Iowa,Illinois)
+
+mapview(Iowa_and_Illinois)
 
 
 
@@ -106,12 +121,14 @@ minnesota_lakes %>%
 
 
 
-## 2) Subset LAGOS data to these sites, how many sites are in Illinois and Iowa
-combined? How does this compare to Minnesota?
+## 2) Subset LAGOS data to these sites, how many sites are in Illinois and Iowa combined? How does this compare to Minnesota?
 
-```{r}
-
+```{r,warning=F,message=F}
+#Subset lakes based on spatial position
+Iowa_and_Illinois_lakes <- spatial_lakes[Iowa_and_Illinois,]
 ```
+
+There are fewer lake sites in Illinois and Iowa combined compared to Minnesota. Iowa and Illinois have a combined 16466 observations, while Minnesota alone has 29038 observations.
 
 
 ## 3) What is the distribution of lake size in Iowa vs. Minnesota?
@@ -119,21 +136,39 @@ combined? How does this compare to Minnesota?
 - Here I want to see a histogram plot with lake size on x-axis and frequency on 
 y axis (check out geom_histogram)
 
-```{r}
+```{r,warning=F,message=F}
 
+#Subset just Iowa
+Iowa__lakes <- spatial_lakes[Iowa,]
+```
+```{r,warning=F, message=F}
+#Create Iowa Histogram
+ggplot(data=Iowa__lakes,aes(x=lake_area_ha)) +
+  geom_histogram() +
+  scale_x_log10() +
+  xlab('Log Scale - Iowa Lake Area (ha)')
+```
+```{r,warning=F, message=F}
+#Create Minnesota Histogram
+ggplot(data=minnesota_lakes,aes(x=lake_area_ha)) +
+  geom_histogram() +
+  scale_x_log10() +
+  xlab('Log Scale - Minnesota Lake Area (ha)')
+```
 
+Although small lakes dominate both states, Minnesota has more larger lakes compared to Iowa.
+
+## 4) Make an interactive plot of lakes in Iowa and Illinois and color them by lake area in hectares
+
+```{r,warning=F,message=F}
+#Plotting the first 1000 lakes
+Iowa_and_Illinois_lakes %>%
+  arrange(-lake_area_ha) %>%
+  slice(1:1000) %>%
+  mapview(.,zcol = 'lake_area_ha')
 ```
 
 
-## 4) Make an interactive plot of lakes in Iowa and Illinois and color them
-by lake area in hectares
-
-```{r}
-
-```
-
-
-## 5) What other data sources might we use to understand how reservoirs and 
-natural lakes vary in size in these three states? 
-
-
+## 5) What other data sources might we use to understand how reservoirs and natural lakes vary in size in these three states? 
+  
+Mapping groundwater wells by water level could illustrate whether there's a relationship between groundwater and reservoir/lake size. Additionally, precipitation collection sites for both rain and snow could be compared to determine whether a relationship exists for reservoir/lake size.
