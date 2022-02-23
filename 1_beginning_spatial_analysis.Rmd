@@ -165,7 +165,7 @@ Although small lakes dominate both states, Minnesota has more larger lakes compa
 Iowa_and_Illinois_lakes %>%
   arrange(-lake_area_ha) %>%
   slice(1:1000) %>%
-  mapview(.,zcol = 'lake_area_ha')
+  mapview(.,zcol = 'lake_area_ha',canvas=TRUE)
 ```
 
 
